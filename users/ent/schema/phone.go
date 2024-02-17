@@ -4,11 +4,18 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
+	"entgo.io/ent/schema/mixin"
 )
 
 // Phone holds the schema definition for the Phone entity.
 type Phone struct {
 	ent.Schema
+}
+
+func (Phone) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		mixin.Time{},
+	}
 }
 
 // Fields of the Phone.
