@@ -24,6 +24,8 @@ type UserQuery struct {
 	predicates []predicate.User
 	withPhone  *PhoneQuery
 	withFKs    bool
+	modifiers  []func(*sql.Selector)
+	loadTotal  []func(context.Context, []*User) error
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -390,6 +392,9 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	if len(uq.modifiers) > 0 {
+		_spec.Modifiers = uq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -402,6 +407,11 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	if query := uq.withPhone; query != nil {
 		if err := uq.loadPhone(ctx, query, nodes, nil,
 			func(n *User, e *Phone) { n.Edges.Phone = e }); err != nil {
+			return nil, err
+		}
+	}
+	for i := range uq.loadTotal {
+		if err := uq.loadTotal[i](ctx, nodes); err != nil {
 			return nil, err
 		}
 	}
@@ -443,6 +453,9 @@ func (uq *UserQuery) loadPhone(ctx context.Context, query *PhoneQuery, nodes []*
 
 func (uq *UserQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := uq.querySpec()
+	if len(uq.modifiers) > 0 {
+		_spec.Modifiers = uq.modifiers
+	}
 	_spec.Node.Columns = uq.ctx.Fields
 	if len(uq.ctx.Fields) > 0 {
 		_spec.Unique = uq.ctx.Unique != nil && *uq.ctx.Unique
