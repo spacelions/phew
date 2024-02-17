@@ -11,8 +11,8 @@ const (
 	Label = "user"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldName holds the string denoting the name field in the database.
-	FieldName = "name"
+	// FieldUsername holds the string denoting the username field in the database.
+	FieldUsername = "username"
 	// FieldAge holds the string denoting the age field in the database.
 	FieldAge = "age"
 	// Table holds the table name of the user in the database.
@@ -22,7 +22,7 @@ const (
 // Columns holds all SQL columns for user fields.
 var Columns = []string{
 	FieldID,
-	FieldName,
+	FieldUsername,
 	FieldAge,
 }
 
@@ -37,8 +37,8 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// DefaultName holds the default value on creation for the "name" field.
-	DefaultName string
+	// DefaultUsername holds the default value on creation for the "username" field.
+	DefaultUsername string
 	// AgeValidator is a validator for the "age" field. It is called by the builders before save.
 	AgeValidator func(int) error
 )
@@ -51,9 +51,9 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
-// ByName orders the results by the name field.
-func ByName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldName, opts...).ToFunc()
+// ByUsername orders the results by the username field.
+func ByUsername(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUsername, opts...).ToFunc()
 }
 
 // ByAge orders the results by the age field.
