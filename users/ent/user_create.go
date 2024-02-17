@@ -25,14 +25,6 @@ func (uc *UserCreate) SetUsername(s string) *UserCreate {
 	return uc
 }
 
-// SetNillableUsername sets the "username" field if the given value is not nil.
-func (uc *UserCreate) SetNillableUsername(s *string) *UserCreate {
-	if s != nil {
-		uc.SetUsername(*s)
-	}
-	return uc
-}
-
 // SetAge sets the "age" field.
 func (uc *UserCreate) SetAge(i int) *UserCreate {
 	uc.mutation.SetAge(i)
@@ -46,7 +38,6 @@ func (uc *UserCreate) Mutation() *UserMutation {
 
 // Save creates the User in the database.
 func (uc *UserCreate) Save(ctx context.Context) (*User, error) {
-	uc.defaults()
 	return withHooks(ctx, uc.sqlSave, uc.mutation, uc.hooks)
 }
 
@@ -69,14 +60,6 @@ func (uc *UserCreate) Exec(ctx context.Context) error {
 func (uc *UserCreate) ExecX(ctx context.Context) {
 	if err := uc.Exec(ctx); err != nil {
 		panic(err)
-	}
-}
-
-// defaults sets the default values of the builder before save.
-func (uc *UserCreate) defaults() {
-	if _, ok := uc.mutation.Username(); !ok {
-		v := user.DefaultUsername
-		uc.mutation.SetUsername(v)
 	}
 }
 
@@ -148,7 +131,6 @@ func (ucb *UserCreateBulk) Save(ctx context.Context) ([]*User, error) {
 	for i := range ucb.builders {
 		func(i int, root context.Context) {
 			builder := ucb.builders[i]
-			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*UserMutation)
 				if !ok {

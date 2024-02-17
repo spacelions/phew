@@ -37,8 +37,6 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// DefaultUsername holds the default value on creation for the "username" field.
-	DefaultUsername string
 	// AgeValidator is a validator for the "age" field. It is called by the builders before save.
 	AgeValidator func(int) error
 )
