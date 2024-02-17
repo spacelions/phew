@@ -9,6 +9,18 @@ import (
 	"github.com/spacelions/phew/users/ent"
 )
 
+// The PhoneFunc type is an adapter to allow the use of ordinary
+// function as Phone mutator.
+type PhoneFunc func(context.Context, *ent.PhoneMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f PhoneFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.PhoneMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PhoneMutation", m)
+}
+
 // The UserFunc type is an adapter to allow the use of ordinary
 // function as User mutator.
 type UserFunc func(context.Context, *ent.UserMutation) (ent.Value, error)

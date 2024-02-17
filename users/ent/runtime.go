@@ -5,6 +5,7 @@ package ent
 import (
 	"time"
 
+	"github.com/spacelions/phew/users/ent/phone"
 	"github.com/spacelions/phew/users/ent/schema"
 	"github.com/spacelions/phew/users/ent/user"
 )
@@ -13,6 +14,18 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	phoneFields := schema.Phone{}.Fields()
+	_ = phoneFields
+	// phoneDescNumber is the schema descriptor for number field.
+	phoneDescNumber := phoneFields[0].Descriptor()
+	// phone.NumberValidator is a validator for the "number" field. It is called by the builders before save.
+	phone.NumberValidator = phoneDescNumber.Validators[0].(func(string) error)
+	// phoneDescCountryCode is the schema descriptor for country_code field.
+	phoneDescCountryCode := phoneFields[1].Descriptor()
+	// phone.DefaultCountryCode holds the default value on creation for the country_code field.
+	phone.DefaultCountryCode = phoneDescCountryCode.Default.(string)
+	// phone.CountryCodeValidator is a validator for the "country_code" field. It is called by the builders before save.
+	phone.CountryCodeValidator = phoneDescCountryCode.Validators[0].(func(string) error)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescAge is the schema descriptor for age field.

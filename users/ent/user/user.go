@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -21,8 +22,17 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// EdgePhone holds the string denoting the phone edge name in mutations.
+	EdgePhone = "phone"
 	// Table holds the table name of the user in the database.
 	Table = "users"
+	// PhoneTable is the table that holds the phone relation/edge.
+	PhoneTable = "users"
+	// PhoneInverseTable is the table name for the Phone entity.
+	// It exists in this package in order to avoid circular dependency with the "phone" package.
+	PhoneInverseTable = "phones"
+	// PhoneColumn is the table column denoting the phone relation/edge.
+	PhoneColumn = "user_phone"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -34,10 +44,21 @@ var Columns = []string{
 	FieldUpdatedAt,
 }
 
+// ForeignKeys holds the SQL foreign-keys that are owned by the "users"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"user_phone",
+}
+
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -79,4 +100,18 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByPhoneField orders the results by phone field.
+func ByPhoneField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPhoneStep(), sql.OrderByField(field, opts...))
+	}
+}
+func newPhoneStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(PhoneInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, PhoneTable, PhoneColumn),
+	)
 }

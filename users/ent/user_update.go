@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/spacelions/phew/users/ent/phone"
 	"github.com/spacelions/phew/users/ent/predicate"
 	"github.com/spacelions/phew/users/ent/user"
 )
@@ -91,9 +92,34 @@ func (uu *UserUpdate) SetNillableUpdatedAt(t *time.Time) *UserUpdate {
 	return uu
 }
 
+// SetPhoneID sets the "phone" edge to the Phone entity by ID.
+func (uu *UserUpdate) SetPhoneID(id int) *UserUpdate {
+	uu.mutation.SetPhoneID(id)
+	return uu
+}
+
+// SetNillablePhoneID sets the "phone" edge to the Phone entity by ID if the given value is not nil.
+func (uu *UserUpdate) SetNillablePhoneID(id *int) *UserUpdate {
+	if id != nil {
+		uu = uu.SetPhoneID(*id)
+	}
+	return uu
+}
+
+// SetPhone sets the "phone" edge to the Phone entity.
+func (uu *UserUpdate) SetPhone(p *Phone) *UserUpdate {
+	return uu.SetPhoneID(p.ID)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
+}
+
+// ClearPhone clears the "phone" edge to the Phone entity.
+func (uu *UserUpdate) ClearPhone() *UserUpdate {
+	uu.mutation.ClearPhone()
+	return uu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -159,6 +185,35 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := uu.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if uu.mutation.PhoneCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.PhoneTable,
+			Columns: []string{user.PhoneColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(phone.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.PhoneIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.PhoneTable,
+			Columns: []string{user.PhoneColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(phone.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -243,9 +298,34 @@ func (uuo *UserUpdateOne) SetNillableUpdatedAt(t *time.Time) *UserUpdateOne {
 	return uuo
 }
 
+// SetPhoneID sets the "phone" edge to the Phone entity by ID.
+func (uuo *UserUpdateOne) SetPhoneID(id int) *UserUpdateOne {
+	uuo.mutation.SetPhoneID(id)
+	return uuo
+}
+
+// SetNillablePhoneID sets the "phone" edge to the Phone entity by ID if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillablePhoneID(id *int) *UserUpdateOne {
+	if id != nil {
+		uuo = uuo.SetPhoneID(*id)
+	}
+	return uuo
+}
+
+// SetPhone sets the "phone" edge to the Phone entity.
+func (uuo *UserUpdateOne) SetPhone(p *Phone) *UserUpdateOne {
+	return uuo.SetPhoneID(p.ID)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
+}
+
+// ClearPhone clears the "phone" edge to the Phone entity.
+func (uuo *UserUpdateOne) ClearPhone() *UserUpdateOne {
+	uuo.mutation.ClearPhone()
+	return uuo
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -341,6 +421,35 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if value, ok := uuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if uuo.mutation.PhoneCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.PhoneTable,
+			Columns: []string{user.PhoneColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(phone.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.PhoneIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.PhoneTable,
+			Columns: []string{user.PhoneColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(phone.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &User{config: uuo.config}
 	_spec.Assign = _node.assignValues

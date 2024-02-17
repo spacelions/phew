@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/spacelions/phew/users/ent/phone"
 	"github.com/spacelions/phew/users/ent/user"
 )
 
@@ -24,8 +25,34 @@ type User struct {
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt    time.Time `json:"updated_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the UserQuery when eager-loading is set.
+	Edges        UserEdges `json:"edges"`
+	user_phone   *int
 	selectValues sql.SelectValues
+}
+
+// UserEdges holds the relations/edges for other nodes in the graph.
+type UserEdges struct {
+	// Phone holds the value of the phone edge.
+	Phone *Phone `json:"phone,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// PhoneOrErr returns the Phone value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e UserEdges) PhoneOrErr() (*Phone, error) {
+	if e.loadedTypes[0] {
+		if e.Phone == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: phone.Label}
+		}
+		return e.Phone, nil
+	}
+	return nil, &NotLoadedError{edge: "phone"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -39,6 +66,8 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt, user.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
+		case user.ForeignKeys[0]: // user_phone
+			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -84,6 +113,13 @@ func (u *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				u.UpdatedAt = value.Time
 			}
+		case user.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field user_phone", value)
+			} else if value.Valid {
+				u.user_phone = new(int)
+				*u.user_phone = int(value.Int64)
+			}
 		default:
 			u.selectValues.Set(columns[i], values[i])
 		}
@@ -95,6 +131,11 @@ func (u *User) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (u *User) Value(name string) (ent.Value, error) {
 	return u.selectValues.Get(name)
+}
+
+// QueryPhone queries the "phone" edge of the User entity.
+func (u *User) QueryPhone() *PhoneQuery {
+	return NewUserClient(u.config).QueryPhone(u)
 }
 
 // Update returns a builder for updating this User.

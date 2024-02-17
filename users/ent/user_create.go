@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/spacelions/phew/users/ent/phone"
 	"github.com/spacelions/phew/users/ent/user"
 )
 
@@ -58,6 +59,25 @@ func (uc *UserCreate) SetNillableUpdatedAt(t *time.Time) *UserCreate {
 		uc.SetUpdatedAt(*t)
 	}
 	return uc
+}
+
+// SetPhoneID sets the "phone" edge to the Phone entity by ID.
+func (uc *UserCreate) SetPhoneID(id int) *UserCreate {
+	uc.mutation.SetPhoneID(id)
+	return uc
+}
+
+// SetNillablePhoneID sets the "phone" edge to the Phone entity by ID if the given value is not nil.
+func (uc *UserCreate) SetNillablePhoneID(id *int) *UserCreate {
+	if id != nil {
+		uc = uc.SetPhoneID(*id)
+	}
+	return uc
+}
+
+// SetPhone sets the "phone" edge to the Phone entity.
+func (uc *UserCreate) SetPhone(p *Phone) *UserCreate {
+	return uc.SetPhoneID(p.ID)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -165,6 +185,23 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := uc.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if nodes := uc.mutation.PhoneIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.PhoneTable,
+			Columns: []string{user.PhoneColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(phone.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.user_phone = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

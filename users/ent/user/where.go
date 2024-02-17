@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/spacelions/phew/users/ent/predicate"
 )
 
@@ -257,6 +258,29 @@ func UpdatedAtLT(v time.Time) predicate.User {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
+// HasPhone applies the HasEdge predicate on the "phone" edge.
+func HasPhone() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, PhoneTable, PhoneColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPhoneWith applies the HasEdge predicate on the "phone" edge with a given conditions (other predicates).
+func HasPhoneWith(preds ...predicate.Phone) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newPhoneStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.
