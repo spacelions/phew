@@ -8,6 +8,7 @@ import (
 	"log"
 
 	"github.com/spacelions/phew/users/ent"
+	"github.com/spacelions/phew/users/ent/migrate"
 	"github.com/spf13/cobra"
 
 	_ "github.com/lib/pq"
@@ -24,7 +25,7 @@ var migrateCmd = &cobra.Command{
 		}
 		defer client.Close()
 		// Run the auto migration tool.
-		if err := client.Schema.Create(context.Background()); err != nil {
+		if err := client.Schema.Create(context.Background(), migrate.WithGlobalUniqueID(true)); err != nil {
 			log.Fatalf("failed creating schema resources: %v", err)
 		}
 	},
