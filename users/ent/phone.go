@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -17,6 +18,10 @@ type Phone struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
+	// CreateTime holds the value of the "create_time" field.
+	CreateTime time.Time `json:"create_time,omitempty"`
+	// UpdateTime holds the value of the "update_time" field.
+	UpdateTime time.Time `json:"update_time,omitempty"`
 	// Number holds the value of the "number" field.
 	Number string `json:"number,omitempty"`
 	// CountryCode holds the value of the "country_code" field.
@@ -59,6 +64,8 @@ func (*Phone) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case phone.FieldNumber, phone.FieldCountryCode:
 			values[i] = new(sql.NullString)
+		case phone.FieldCreateTime, phone.FieldUpdateTime:
+			values[i] = new(sql.NullTime)
 		case phone.ForeignKeys[0]: // phone_user
 			values[i] = new(sql.NullInt64)
 		default:
@@ -82,6 +89,18 @@ func (ph *Phone) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			ph.ID = int(value.Int64)
+		case phone.FieldCreateTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field create_time", values[i])
+			} else if value.Valid {
+				ph.CreateTime = value.Time
+			}
+		case phone.FieldUpdateTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field update_time", values[i])
+			} else if value.Valid {
+				ph.UpdateTime = value.Time
+			}
 		case phone.FieldNumber:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field number", values[i])
@@ -142,6 +161,12 @@ func (ph *Phone) String() string {
 	var builder strings.Builder
 	builder.WriteString("Phone(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", ph.ID))
+	builder.WriteString("create_time=")
+	builder.WriteString(ph.CreateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("update_time=")
+	builder.WriteString(ph.UpdateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
 	builder.WriteString("number=")
 	builder.WriteString(ph.Number)
 	builder.WriteString(", ")

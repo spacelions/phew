@@ -298,12 +298,12 @@ func (pq *PhoneQuery) WithUser(opts ...func(*UserQuery)) *PhoneQuery {
 // Example:
 //
 //	var v []struct {
-//		Number string `json:"number,omitempty"`
+//		CreateTime time.Time `json:"create_time,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Phone.Query().
-//		GroupBy(phone.FieldNumber).
+//		GroupBy(phone.FieldCreateTime).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (pq *PhoneQuery) GroupBy(field string, fields ...string) *PhoneGroupBy {
@@ -321,11 +321,11 @@ func (pq *PhoneQuery) GroupBy(field string, fields ...string) *PhoneGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Number string `json:"number,omitempty"`
+//		CreateTime time.Time `json:"create_time,omitempty"`
 //	}
 //
 //	client.Phone.Query().
-//		Select(phone.FieldNumber).
+//		Select(phone.FieldCreateTime).
 //		Scan(ctx, &v)
 func (pq *PhoneQuery) Select(fields ...string) *PhoneSelect {
 	pq.ctx.Fields = append(pq.ctx.Fields, fields...)

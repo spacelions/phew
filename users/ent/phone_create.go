@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -18,6 +19,34 @@ type PhoneCreate struct {
 	config
 	mutation *PhoneMutation
 	hooks    []Hook
+}
+
+// SetCreateTime sets the "create_time" field.
+func (pc *PhoneCreate) SetCreateTime(t time.Time) *PhoneCreate {
+	pc.mutation.SetCreateTime(t)
+	return pc
+}
+
+// SetNillableCreateTime sets the "create_time" field if the given value is not nil.
+func (pc *PhoneCreate) SetNillableCreateTime(t *time.Time) *PhoneCreate {
+	if t != nil {
+		pc.SetCreateTime(*t)
+	}
+	return pc
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (pc *PhoneCreate) SetUpdateTime(t time.Time) *PhoneCreate {
+	pc.mutation.SetUpdateTime(t)
+	return pc
+}
+
+// SetNillableUpdateTime sets the "update_time" field if the given value is not nil.
+func (pc *PhoneCreate) SetNillableUpdateTime(t *time.Time) *PhoneCreate {
+	if t != nil {
+		pc.SetUpdateTime(*t)
+	}
+	return pc
 }
 
 // SetNumber sets the "number" field.
@@ -94,6 +123,14 @@ func (pc *PhoneCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (pc *PhoneCreate) defaults() {
+	if _, ok := pc.mutation.CreateTime(); !ok {
+		v := phone.DefaultCreateTime()
+		pc.mutation.SetCreateTime(v)
+	}
+	if _, ok := pc.mutation.UpdateTime(); !ok {
+		v := phone.DefaultUpdateTime()
+		pc.mutation.SetUpdateTime(v)
+	}
 	if _, ok := pc.mutation.CountryCode(); !ok {
 		v := phone.DefaultCountryCode
 		pc.mutation.SetCountryCode(v)
@@ -102,6 +139,12 @@ func (pc *PhoneCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (pc *PhoneCreate) check() error {
+	if _, ok := pc.mutation.CreateTime(); !ok {
+		return &ValidationError{Name: "create_time", err: errors.New(`ent: missing required field "Phone.create_time"`)}
+	}
+	if _, ok := pc.mutation.UpdateTime(); !ok {
+		return &ValidationError{Name: "update_time", err: errors.New(`ent: missing required field "Phone.update_time"`)}
+	}
 	if _, ok := pc.mutation.Number(); !ok {
 		return &ValidationError{Name: "number", err: errors.New(`ent: missing required field "Phone.number"`)}
 	}
@@ -144,6 +187,14 @@ func (pc *PhoneCreate) createSpec() (*Phone, *sqlgraph.CreateSpec) {
 		_node = &Phone{config: pc.config}
 		_spec = sqlgraph.NewCreateSpec(phone.Table, sqlgraph.NewFieldSpec(phone.FieldID, field.TypeInt))
 	)
+	if value, ok := pc.mutation.CreateTime(); ok {
+		_spec.SetField(phone.FieldCreateTime, field.TypeTime, value)
+		_node.CreateTime = value
+	}
+	if value, ok := pc.mutation.UpdateTime(); ok {
+		_spec.SetField(phone.FieldUpdateTime, field.TypeTime, value)
+		_node.UpdateTime = value
+	}
 	if value, ok := pc.mutation.Number(); ok {
 		_spec.SetField(phone.FieldNumber, field.TypeString, value)
 		_node.Number = value

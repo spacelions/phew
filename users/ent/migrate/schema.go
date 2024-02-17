@@ -11,6 +11,8 @@ var (
 	// PhonesColumns holds the columns for the "phones" table.
 	PhonesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
 		{Name: "number", Type: field.TypeString},
 		{Name: "country_code", Type: field.TypeString, Default: "+86"},
 		{Name: "phone_user", Type: field.TypeInt, Nullable: true},
@@ -23,7 +25,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "phones_users_user",
-				Columns:    []*schema.Column{PhonesColumns[3]},
+				Columns:    []*schema.Column{PhonesColumns[5]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -32,17 +34,17 @@ var (
 			{
 				Name:    "phone_country_code_number",
 				Unique:  true,
-				Columns: []*schema.Column{PhonesColumns[2], PhonesColumns[1]},
+				Columns: []*schema.Column{PhonesColumns[4], PhonesColumns[3]},
 			},
 		},
 	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
 		{Name: "username", Type: field.TypeString, Unique: true},
 		{Name: "age", Type: field.TypeInt},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "user_phone", Type: field.TypeInt, Nullable: true},
 	}
 	// UsersTable holds the schema information for the "users" table.
@@ -62,7 +64,7 @@ var (
 			{
 				Name:    "user_username",
 				Unique:  true,
-				Columns: []*schema.Column{UsersColumns[1]},
+				Columns: []*schema.Column{UsersColumns[3]},
 			},
 		},
 	}

@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -25,6 +26,12 @@ type PhoneUpdate struct {
 // Where appends a list predicates to the PhoneUpdate builder.
 func (pu *PhoneUpdate) Where(ps ...predicate.Phone) *PhoneUpdate {
 	pu.mutation.Where(ps...)
+	return pu
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (pu *PhoneUpdate) SetUpdateTime(t time.Time) *PhoneUpdate {
+	pu.mutation.SetUpdateTime(t)
 	return pu
 }
 
@@ -88,6 +95,7 @@ func (pu *PhoneUpdate) ClearUser() *PhoneUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (pu *PhoneUpdate) Save(ctx context.Context) (int, error) {
+	pu.defaults()
 	return withHooks(ctx, pu.sqlSave, pu.mutation, pu.hooks)
 }
 
@@ -110,6 +118,14 @@ func (pu *PhoneUpdate) Exec(ctx context.Context) error {
 func (pu *PhoneUpdate) ExecX(ctx context.Context) {
 	if err := pu.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (pu *PhoneUpdate) defaults() {
+	if _, ok := pu.mutation.UpdateTime(); !ok {
+		v := phone.UpdateDefaultUpdateTime()
+		pu.mutation.SetUpdateTime(v)
 	}
 }
 
@@ -139,6 +155,9 @@ func (pu *PhoneUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := pu.mutation.UpdateTime(); ok {
+		_spec.SetField(phone.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := pu.mutation.Number(); ok {
 		_spec.SetField(phone.FieldNumber, field.TypeString, value)
@@ -193,6 +212,12 @@ type PhoneUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *PhoneMutation
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (puo *PhoneUpdateOne) SetUpdateTime(t time.Time) *PhoneUpdateOne {
+	puo.mutation.SetUpdateTime(t)
+	return puo
 }
 
 // SetNumber sets the "number" field.
@@ -268,6 +293,7 @@ func (puo *PhoneUpdateOne) Select(field string, fields ...string) *PhoneUpdateOn
 
 // Save executes the query and returns the updated Phone entity.
 func (puo *PhoneUpdateOne) Save(ctx context.Context) (*Phone, error) {
+	puo.defaults()
 	return withHooks(ctx, puo.sqlSave, puo.mutation, puo.hooks)
 }
 
@@ -290,6 +316,14 @@ func (puo *PhoneUpdateOne) Exec(ctx context.Context) error {
 func (puo *PhoneUpdateOne) ExecX(ctx context.Context) {
 	if err := puo.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (puo *PhoneUpdateOne) defaults() {
+	if _, ok := puo.mutation.UpdateTime(); !ok {
+		v := phone.UpdateDefaultUpdateTime()
+		puo.mutation.SetUpdateTime(v)
 	}
 }
 
@@ -336,6 +370,9 @@ func (puo *PhoneUpdateOne) sqlSave(ctx context.Context) (_node *Phone, err error
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := puo.mutation.UpdateTime(); ok {
+		_spec.SetField(phone.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := puo.mutation.Number(); ok {
 		_spec.SetField(phone.FieldNumber, field.TypeString, value)
