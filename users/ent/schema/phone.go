@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 	"entgo.io/ent/schema/mixin"
@@ -30,7 +31,10 @@ func (Phone) Fields() []ent.Field {
 
 // Edges of the Phone.
 func (Phone) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.To("user", User.Type).
+			Unique(),
+	}
 }
 
 func (Phone) Indexes() []ent.Index {
